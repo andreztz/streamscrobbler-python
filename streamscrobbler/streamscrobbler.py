@@ -1,8 +1,19 @@
 # -*- coding: utf-8 -*-
+import logging
 import re
-import urllib.request
 import urllib.error
 import urllib.parse
+import urllib.request
+
+logger = logging.getLogger(__package__)
+
+formatter = logging.Formatter(
+    "[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s"
+)
+
+null_handler = logging.NullHandler()
+null_handler.setFormatter(formatter)
+logger.addHandler(null_handler)
 
 
 # this is the function you should call with the url to get all data sorted as a object in the return
@@ -60,15 +71,16 @@ def get_all_data(address):
         return {"status": status, "metadata": metadata}
 
     except urllib.error.HTTPError as e:
-        print(("    Error, HTTPError = " + str(e.code)))
+        logger.exception("    Error, HTTPError = ")
+
         return {"status": status, "metadata": None}
 
     except urllib.error.URLError as e:
-        print(("    Error, URLError: " + str(e.reason)))
+        logger.exception("    Error, URLError: ")
         return {"status": status, "metadata": None}
 
     except Exception as err:
-        print(("    Error: " + str(err)))
+        logger.exception("    Error: ")
         return {"status": status, "metadata": None}
 
 
@@ -133,12 +145,12 @@ def shoutcast_check(response, headers, is_old):
             title = re.sub("http://.*", "", title)
             title.rstrip()
         except Exception as err:
-            print(("songtitle error: " + str(err)))
+            logger.exception("songtitle error: ")
             title = content[metaint:].split(b"'")[1]
 
         return {"song": title, "bitrate": bitrate, "contenttype": contenttype}
     else:
-        print("No metaint")
+        logger.debug('No metaint')
         return False
 
 
